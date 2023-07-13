@@ -6,7 +6,8 @@ This is a fork of MagicJinn/MrBeastify-Youtube, a fantastic extension which dese
 
 Instructions on how to port and modify the extension can be found [on MagicJinn's page](https://github.com/MagicJinn/MrBeastify-Youtube/issues/16).
 
-----------These are for MrBeastify, I'll edit them once I get this extension working.----------
+-----------------------------------------------------------------------------------------------
+These are for MrBeastify, I'll edit them once I get this extension working.
 [Firefox](http://addons.mozilla.org/en-GB/firefox/addon/mrbeastify-youtube/) | [Chrome](http://chrome.google.com/webstore/detail/youtube-mrbeastify/dbmaeobgdodeimjdjnkipbfhgeldnmeb) | [Edge](http://microsoftedge.microsoft.com/addons/detail/youtube-mrbeastify/jabaaojkmmljhmnheeihppepcmiadhll0)
 
 -----------------------------------------------------------------------------------------------
