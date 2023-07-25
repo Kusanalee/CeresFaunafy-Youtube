@@ -1,32 +1,36 @@
 const imagesPath = "images/";
+var useAlternativeImages
+var flipBlacklist
 
 // Apply the overlay
-function applyOverlay(thumbnailElement, overlayImageUrl, flip) {
-  // Create a new img element for the overlay
-  const overlayImage = document.createElement("img");
-  overlayImage.src = overlayImageUrl;
-  overlayImage.style.position = "absolute";
-  overlayImage.style.top = "0";
-  overlayImage.style.left = "0";
-  overlayImage.style.width = "100%";
-  overlayImage.style.height = "100%";
-  overlayImage.style.zIndex = "0"; // Ensure overlay is on top but below the time indicator
-  if (flip) {
-    overlayImage.style.transform = "scaleX(-1)"; // Flip the image horizontally
+function applyOverlay(thumbnailElement, overlayImageURL, flip = false) {
+  if (thumbnailElement.nodeName == "IMG") {
+    // Create a new img element for the overlay
+    const overlayImage = document.createElement("img");
+    overlayImage.src = overlayImageURL;
+    overlayImage.style.position = "absolute";
+    overlayImage.style.top = "0";
+    overlayImage.style.left = "0";
+    overlayImage.style.width = "100%";
+    overlayImage.style.height = "100%";
+    overlayImage.style.zIndex = "0"; // Ensure overlay is on top but below the time indicator
+    if (flip) {
+      overlayImage.style.transform = "scaleX(-1)"; // Flip the image horizontally
+    }
+    thumbnailElement.style.position = "relative"; // Style the thumbnailElement to handle absolute positioning
+    thumbnailElement.parentElement.appendChild(overlayImage);
+  } else if (thumbnailElement.nodeName == "DIV") {
+    thumbnailElement.style.backgroundImage = `url("${overlayImageURL}"), ` + thumbnailElement.style.backgroundImage;
   }
-  thumbnailElement.style.position = "relative"; // Style the thumbnailElement to handle absolute positioning
-
-  // Append the overlay to the parent of the thumbnail
-  thumbnailElement.parentElement.appendChild(overlayImage);
-}
+};
 
 // Looks for all thumbnails and applies overlay
 function applyOverlayToThumbnails() {
   // Query all YouTube video thumbnails on the page that haven't been processed yet
   // (ignores shorts thumbnails)
-  const elementQuery =
-    "ytd-thumbnail:not(.ytd-video-preview, .ytd-rich-grid-slim-media) a > yt-image > img.yt-core-image:only-child:not(.yt-core-attributed-string__image-element)";
-  const thumbnailElements = document.querySelectorAll(elementQuery);
+  const elementQueryThumbnail =
+    "ytd-thumbnail:not(.ytd-video-preview, .ytd-rich-grid-slim-media) a > yt-image > img.yt-core-image:only-child:not(.yt-core-attributed-string__image-element),.ytp-videowall-still-image:not([style*='extension:'])";
+  const thumbnailElements = document.querySelectorAll(elementQueryThumbnail);
 
   // Apply overlay to each thumbnail
   thumbnailElements.forEach((thumbnailElement) => {
@@ -35,9 +39,21 @@ function applyOverlayToThumbnails() {
 
     for (let i = 0; i < loops; i++) {
       // Get overlay image URL from your directory
-      const overlayImageUrl = getRandomImageFromDirectory();
-      const flip = Math.random() < 0.25; // 25% chance to flip the image
-      applyOverlay(thumbnailElement, overlayImageUrl, flip);
+      const overlayImageIndex = getRandomImageFromDirectory();
+      let flip = Math.random() < 0.25; // 25% chance to flip the image
+      let overlayImageURL
+      if (flip && flipBlacklist.includes(overlayImageIndex)) {
+        if (useAlternativeImages) {
+          overlayImageURL = getImageURL(`textFlipped/${overlayImageIndex}`);
+          flip = false;
+        } else {
+          overlayImageURL = getImageURL(overlayImageIndex);
+          flip = false;
+        }
+      } else {
+        overlayImageURL = getImageURL(overlayImageIndex);
+      }
+      applyOverlay(thumbnailElement, overlayImageURL, flip);
     }
   });
 }
@@ -66,23 +82,22 @@ function getRandomImageFromDirectory() {
   last_indexes.shift()
   last_indexes.push(randomIndex)
 
-  return getImageURL(randomIndex);
+  return randomIndex
 }
 
 // Checks if an image exists in the image folder
-async function checkImageExistence(index = 1) {
+async function checkImageExistence(index) {
   const testedURL = getImageURL(index)
 
-  try {
-    // See if the image exists
-    await fetch(testedURL);
-    return true // Image exists
-  } catch {
-    return false // Image does not exist
-  }
+  return fetch(testedURL)
+    .then(() => {
+      return true
+    }).catch(error => {
+      return false
+    })
 }
 
-let highestImageIndex;
+var highestImageIndex;
 // Gets the highest index of an image in the image folder starting from 1
 async function getHighestImageIndex() {
   // Avoid exponential search for smaller values
@@ -115,11 +130,28 @@ async function getHighestImageIndex() {
   // Max is the size of the image array
   highestImageIndex = max;
 }
+var blacklistStatus
+
+function GetFlipBlocklist() {
+  fetch(chrome.runtime.getURL(`${imagesPath}flip_blacklist.json`))
+    .then(response => response.json())
+    .then(data => {
+      useAlternativeImages = data.useAlternativeImages;
+      flipBlacklist = data.blacklistedImages;
+
+      blacklistStatus = "Flip blacklist found. " + (useAlternativeImages ? "Images will be substituted." : "Images won't be flipped.")
+    })
+    .catch((error) => {
+      blacklistStatus = "No flip blacklist found. Proceeding without it."
+    });
+}
+
+GetFlipBlocklist()
 
 getHighestImageIndex()
   .then(() => {
     setInterval(applyOverlayToThumbnails, 100);
     console.log(
-      "CeresFaunafy Loaded Successfully, " + highestImageIndex + " images detected."
+      "CeresFaunafy Loaded Successfully, " + highestImageIndex + " images detected. " + blacklistStatus
     );
   })
