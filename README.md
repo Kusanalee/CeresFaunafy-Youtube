@@ -4,6 +4,16 @@ Ceres Faunafy but with 100% more fauna
 
 Enhance your browsing experience with CeresFaunafy! Is your browser experience not natural enough? Are you having trouble finding your oshi? An absence of UUUUUUU in your life? Fear no more. This extension adds famous VTuber Ceres Fauna to every YouTube thumbnail.
 
+How to installuuuuuu?
+
+1. Go to extension settings
+2. Turn on developer mode
+3. Download the Zip file from Releases
+4. Unzip the file
+5. Press on "Load Unpacked"
+6. Select Ceresfaunafy-Youtube folder
+7. Yeah it's on now
+
 This is a fork of [MagicJinn/MrBeastify-Youtube](https://github.com/MagicJinn/MrBeastify-Youtube), a fantastic extension which deserves all sorts of praise, I just modified it a tiny bit to be Fauna.
 
 Instructions on how to port and modify the extension can be found [on MagicJinn's page](https://github.com/MagicJinn/MrBeastify-Youtube/issues/16) or in "how-to-upload.txt".
